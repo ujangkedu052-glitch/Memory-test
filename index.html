@@ -3,35 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memory Test - No X Apa?</title>
+  <title>Memory Test - Kata Berjalan</title>
   <style>
     body {font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; background: #f5f5f5;}
     h1 {color: #2563eb; margin-bottom: 10px;}
-  .card {background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 20px 0;}
-    #daftarKata {display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; text-align: left; margin: 15px 0; max-height: 300px; overflow-y: auto;}
-  .kata-item {background: #e0e7ff; padding: 6px 8px; border-radius: 6px; font-size: 14px;}
+   .card {background: white; border-radius: 12px; padding: 30px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 20px 0; min-height: 300px;}
+    #kataBerjalan {font-size: 36px; font-weight: bold; margin: 40px 0; height: 50px; color: #1e40af;}
     #soal {font-size: 24px; font-weight: bold; margin: 20px 0;}
-  .pilihan {display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;}
+   .pilihan {display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;}
     button {padding: 12px; font-size: 16px; border: 2px solid #2563eb; background: white; border-radius: 8px; cursor: pointer; transition: all 0.2s;}
     button:hover {background: #2563eb; color: white;}
     button:disabled {opacity: 0.5; cursor: not-allowed;}
-  .btn-mulai {background: #2563eb; color: white; width: 100%; margin-top: 10px;}
-  .benar {background: #22c55e!important; color: white!important; border-color: #22c55e!important;}
-  .salah {background: #ef4444!important; color: white!important; border-color: #ef4444!important;}
+   .btn-mulai {background: #2563eb; color: white; width: 100%; margin-top: 10px; font-size: 18px;}
+   .benar {background: #22c55e!important; color: white!important; border-color: #22c55e!important;}
+   .salah {background: #ef4444!important; color: white!important; border-color: #ef4444!important;}
     #feedback {margin: 15px 0; font-weight: bold; min-height: 24px;}
     #skor {font-size: 18px; margin-top: 10px;}
-  .hidden {display: none;}
+   .hidden {display: none;}
+    #progress {margin-bottom: 15px; font-size: 14px; color: #666;}
   </style>
 </head>
 <body>
-  <h1>Memory Test - 20 Soal</h1>
-  <div id="fase-hafal" class="card">
-    <h3>Hafalkan kata-kata ini selama 60 detik:</h3>
-    <div id="daftarKata"></div>
-    <div id="timer">Waktu: 60 detik</div>
-    <button class="btn-mulai" onclick="mulaiQuiz()">Mulai Quiz</button>
+  <h1>Memory Test - Kata Berjalan</h1>
+  <div id="fase-awal" class="card">
+    <h3>Tiap soal bakal muncul 5 kata 1 detik per kata</h3>
+    <p>Hafalin urutannya, terus jawab pertanyaannya</p>
+    <button class="btn-mulai" onclick="mulaiGame()">Mulai Test</button>
   </div>
-  <div id="fase-quiz" class="card hidden">
+
+  <div id="fase-tampil" class="card hidden">
+    <div id="progress">Soal 1/20</div>
+    <div id="kataBerjalan">Siap?</div>
+  </div>
+
+  <div id="fase-jawab" class="card hidden">
     <div id="soal"></div>
     <div class="pilihan" id="pilihan"></div>
     <div id="feedback"></div>
@@ -39,17 +44,107 @@
     <button class="btn-mulai hidden" id="btn-next" onclick="soalBerikut()">Soal Berikutnya</button>
     <button class="btn-mulai hidden" id="btn-ulang" onclick="location.reload()">Ulangi Test</button>
   </div>
-<script>
-// GANTI BAGIAN INI PAKE LIST DARI LINK ASLI
-const kataAsli = ["Bebek","Rumah","Mobil","Buku","Pohon","Meja","Kursi","Pintu","Jendela","Lampu","Bunga","Sungai","Gunung","Pantai","Hujan","Matahari","Bulan","Bintang","Langit","Awan","Kucing","Anjing","Burung","Ikan","Kuda","Sapi","Kambing","Ayam","Tikus","Ular","Apel","Jeruk","Mangga","Pisang","Anggur","Semangka","Melon","Nanas","Pepaya","Durian","Roti","Nasi","Mie","Bakso","Sate","Soto","Gado","Pizza","Burger","Donat"];
 
-let kataShuffle=[],soalKe=0,skor=0,nomorSoal=0,jawabanBenar="",timerInterval;
+<script>
+const semuaKata = ["Bebek","Rumah","Mobil","Buku","Pohon","Meja","Kursi","Pintu","Jendela","Lampu","Bunga","Sungai","Gunung","Pantai","Hujan","Matahari","Bulan","Bintang","Langit","Awan","Kucing","Anjing","Burung","Ikan","Kuda","Sapi","Kambing","Ayam","Tikus","Ular","Apel","Jeruk","Mangga","Pisang","Anggur","Semangka","Melon","Nanas","Pepaya","Durian","Roti","Nasi","Mie","Bakso","Sate","Soto","Gado","Pizza","Burger","Donat"];
+let soalKe = 0, skor = 0, kataSoalIni = [], jawabanBenar = "", indexKata = 0;
+
 function shuffleArray(e){const r=[...e];for(let e=r.length-1;e>0;e--){const o=Math.floor(Math.random()*(e+1));[r[e],r[o]]=[r[o],r[e]]}return r}
-function tampilkanDaftarKata(){kataShuffle=shuffleArray(kataAsli);const e=document.getElementById("daftarKata");e.innerHTML=kataShuffle.map((e,r)=>`<div class="kata-item">${r+1}. ${e}</div>`).join("");let r=60;timerInterval=setInterval(()=>{r--,document.getElementById("timer").textContent=`Waktu: ${r} detik`,r<=0&&(clearInterval(timerInterval),mulaiQuiz())},1e3)}
-function mulaiQuiz(){clearInterval(timerInterval),document.getElementById("fase-hafal").classList.add("hidden"),document.getElementById("fase-quiz").classList.remove("hidden"),soalBerikut()}
-function soalBerikut(){if(soalKe>=20)return document.getElementById("soal").textContent="Test Selesai!",document.getElementById("pilihan").innerHTML="",document.getElementById("feedback").textContent=`Skor akhir: ${skor}/20`,document.getElementById("btn-next").classList.add("hidden"),void document.getElementById("btn-ulang").classList.remove("hidden");soalKe++,document.getElementById("btn-next").classList.add("hidden"),document.getElementById("feedback").textContent="",nomorSoal=Math.floor(Math.random()*kataShuffle.length)+1,jawabanBenar=kataShuffle[nomorSoal-1],document.getElementById("soal").textContent=`No ${nomorSoal} apa?`;let e=[jawabanBenar];for(;e.length<5;){const r=kataShuffle[Math.floor(Math.random()*kataShuffle.length)];e.includes(r)||e.push(r)}e=shuffleArray(e);const r=["a","b","c","d","e"];document.getElementById("pilihan").innerHTML=e.map((e,o)=>`<button onclick="cekJawaban('${e}',this)">${r[o]}. ${e}</button>`).join(""),document.getElementById("skor").textContent=`Skor: ${skor}/20`}
-function cekJawaban(e,r){const o=document.querySelectorAll("#pilihan button");o.forEach(e=>e.disabled=!0),e===jawabanBenar?(skor++,r.classList.add("benar"),document.getElementById("feedback").textContent="Benar!"):(r.classList.add("salah"),document.getElementById("feedback").textContent=`Salah. No ${nomorSoal} itu '${jawabanBenar}'`,o.forEach(r=>{r.textContent.includes(jawabanBenar)&&r.classList.add("benar")})),document.getElementById("skor").textContent=`Skor: ${skor}/20`,document.getElementById("btn-next").classList.remove("hidden")}
-tampilkanDaftarKata();
+
+function mulaiGame(){
+  document.getElementById("fase-awal").classList.add("hidden");
+  soalBerikut();
+}
+
+function soalBerikut(){
+  if(soalKe >= 20){
+    document.getElementById("fase-jawab").innerHTML = `
+      <h2>Test Selesai!</h2>
+      <div style="font-size: 48px; margin: 20px 0;">${skor}/20</div>
+      <button class="btn-mulai" onclick="location.reload()">Ulangi Test</button>
+    `;
+    return;
+  }
+  
+  soalKe++;
+  document.getElementById("fase-jawab").classList.add("hidden");
+  document.getElementById("fase-tampil").classList.remove("hidden");
+  document.getElementById("progress").textContent = `Soal ${soalKe}/20`;
+  
+  // Ambil 5 kata random buat soal ini
+  kataSoalIni = shuffleArray(semuaKata).slice(0, 5);
+  indexKata = 0;
+  
+  // Mulai tampilin kata 1-1
+  tampilkanKataBerikut();
+}
+
+function tampilkanKataBerikut(){
+  if(indexKata < kataSoalIni.length){
+    document.getElementById("kataBerjalan").textContent = kataSoalIni[indexKata];
+    indexKata++;
+    setTimeout(tampilkanKataBerikut, 1000); // 1 detik per kata
+  } else {
+    // Udah selesai, munculin pertanyaan
+    setTimeout(munculPertanyaan, 500);
+  }
+}
+
+function munculPertanyaan(){
+  document.getElementById("fase-tampil").classList.add("hidden");
+  document.getElementById("fase-jawab").classList.remove("hidden");
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("btn-next").classList.add("hidden");
+  
+  // Bikin pertanyaan random: "Kata ke-X apa?" atau "Ada kata apa aja?"
+  const tipeSoal = Math.random() > 0.5? "posisi" : "ada";
+  
+  if(tipeSoal === "posisi"){
+    const posisi = Math.floor(Math.random() * 5) + 1;
+    jawabanBenar = kataSoalIni[posisi - 1];
+    document.getElementById("soal").textContent = `Kata ke-${posisi} apa?`;
+  } else {
+    jawabanBenar = kataSoalIni[Math.floor(Math.random() * 5)];
+    document.getElementById("soal").textContent = `Mana yang tadi muncul?`;
+  }
+  
+  // Bikin pilihan jawaban
+  let pilihan = [jawabanBenar];
+  while(pilihan.length < 5){
+    const kataRandom = semuaKata[Math.floor(Math.random() * semuaKata.length)];
+    if(!pilihan.includes(kataRandom) &&!kataSoalIni.includes(kataRandom)){
+      pilihan.push(kataRandom);
+    }
+  }
+  pilihan = shuffleArray(pilihan);
+  
+  const huruf = ["a","b","c","d","e"];
+  document.getElementById("pilihan").innerHTML = pilihan.map((e,o)=>
+    `<button onclick="cekJawaban('${e}',this)">${huruf[o]}. ${e}</button>`
+  ).join("");
+  
+  document.getElementById("skor").textContent = `Skor: ${skor}/20`;
+}
+
+function cekJawaban(jawaban, tombol){
+  const semuaTombol = document.querySelectorAll("#pilihan button");
+  semuaTombol.forEach(btn => btn.disabled = true);
+  
+  if(jawaban === jawabanBenar){
+    skor++;
+    tombol.classList.add("benar");
+    document.getElementById("feedback").textContent = "Benar!";
+  } else {
+    tombol.classList.add("salah");
+    document.getElementById("feedback").textContent = `Salah. Jawabannya '${jawabanBenar}'`;
+    semuaTombol.forEach(btn => {
+      if(btn.textContent.includes(jawabanBenar)) btn.classList.add("benar");
+    });
+  }
+  
+  document.getElementById("skor").textContent = `Skor: ${skor}/20`;
+  document.getElementById("btn-next").classList.remove("hidden");
+}
 </script>
 </body>
 </html>
