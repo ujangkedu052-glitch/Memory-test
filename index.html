@@ -3,31 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memory Test - Kata Berjalan</title>
+  <title>Memory Test - Angka Kata</title>
   <style>
     body {font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; background: #f5f5f5;}
     h1 {color: #2563eb; margin-bottom: 10px;}
-   .card {background: white; border-radius: 12px; padding: 30px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 20px 0; min-height: 300px;}
-    #kataBerjalan {font-size: 36px; font-weight: bold; margin: 40px 0; height: 50px; color: #1e40af;}
-    #soal {font-size: 24px; font-weight: bold; margin: 20px 0;}
-   .pilihan {display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;}
+  .card {background: white; border-radius: 12px; padding: 30px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 20px 0; min-height: 300px;}
+    #kataBerjalan {font-size: 32px; font-weight: bold; margin: 40px 0; height: 50px; color: #1e40af;}
+    #soal {font-size: 22px; font-weight: bold; margin: 20px 0;}
+  .pilihan {display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;}
     button {padding: 12px; font-size: 16px; border: 2px solid #2563eb; background: white; border-radius: 8px; cursor: pointer; transition: all 0.2s;}
     button:hover {background: #2563eb; color: white;}
     button:disabled {opacity: 0.5; cursor: not-allowed;}
-   .btn-mulai {background: #2563eb; color: white; width: 100%; margin-top: 10px; font-size: 18px;}
-   .benar {background: #22c55e!important; color: white!important; border-color: #22c55e!important;}
-   .salah {background: #ef4444!important; color: white!important; border-color: #ef4444!important;}
+  .btn-mulai {background: #2563eb; color: white; width: 100%; margin-top: 10px; font-size: 18px;}
+  .benar {background: #22c55e!important; color: white!important; border-color: #22c55e!important;}
+  .salah {background: #ef4444!important; color: white!important; border-color: #ef4444!important;}
     #feedback {margin: 15px 0; font-weight: bold; min-height: 24px;}
     #skor {font-size: 18px; margin-top: 10px;}
-   .hidden {display: none;}
+  .hidden {display: none;}
     #progress {margin-bottom: 15px; font-size: 14px; color: #666;}
   </style>
 </head>
 <body>
-  <h1>Memory Test - Kata Berjalan</h1>
+  <h1>Memory Test - Angka Kata</h1>
   <div id="fase-awal" class="card">
-    <h3>Tiap soal bakal muncul 5 kata 1 detik per kata</h3>
-    <p>Hafalin urutannya, terus jawab pertanyaannya</p>
+    <h3>Tiap soal bakal muncul 5 kata + angka</h3>
+    <p>Contoh: 45 Kuda, 12 Sapi. Hafalin yang angka + katanya</p>
     <button class="btn-mulai" onclick="mulaiGame()">Mulai Test</button>
   </div>
 
@@ -46,7 +46,7 @@
   </div>
 
 <script>
-const semuaKata = ["Bebek","Rumah","Mobil","Buku","Pohon","Meja","Kursi","Pintu","Jendela","Lampu","Bunga","Sungai","Gunung","Pantai","Hujan","Matahari","Bulan","Bintang","Langit","Awan","Kucing","Anjing","Burung","Ikan","Kuda","Sapi","Kambing","Ayam","Tikus","Ular","Apel","Jeruk","Mangga","Pisang","Anggur","Semangka","Melon","Nanas","Pepaya","Durian","Roti","Nasi","Mie","Bakso","Sate","Soto","Gado","Pizza","Burger","Donat"];
+const kataDasar = ["Kuda","Sapi","Kambing","Ayam","Ikan","Bebek","Kucing","Anjing","Burung","Tikus","Ular","Buku","Meja","Kursi","Pintu","Rumah","Mobil","Pohon","Bunga","Gunung","Pantai","Hujan","Matahari","Bulan","Bintang","Langit","Awan","Apel","Jeruk","Mangga","Pisang","Anggur","Roti","Nasi","Mie","Bakso","Sate","Pizza","Burger","Donat"];
 let soalKe = 0, skor = 0, kataSoalIni = [], jawabanBenar = "", indexKata = 0;
 
 function shuffleArray(e){const r=[...e];for(let e=r.length-1;e>0;e--){const o=Math.floor(Math.random()*(e+1));[r[e],r[o]]=[r[o],r[e]]}return r}
@@ -71,11 +71,14 @@ function soalBerikut(){
   document.getElementById("fase-tampil").classList.remove("hidden");
   document.getElementById("progress").textContent = `Soal ${soalKe}/20`;
   
-  // Ambil 5 kata random buat soal ini
-  kataSoalIni = shuffleArray(semuaKata).slice(0, 5);
-  indexKata = 0;
+  // Bikin 5 kata + angka random 10-99
+  const kataAcak = shuffleArray(kataDasar).slice(0, 5);
+  kataSoalIni = kataAcak.map(kata => {
+    const angka = Math.floor(Math.random() * 90) + 10; // 10-99
+    return `${angka} ${kata}`;
+  });
   
-  // Mulai tampilin kata 1-1
+  indexKata = 0;
   tampilkanKataBerikut();
 }
 
@@ -83,9 +86,8 @@ function tampilkanKataBerikut(){
   if(indexKata < kataSoalIni.length){
     document.getElementById("kataBerjalan").textContent = kataSoalIni[indexKata];
     indexKata++;
-    setTimeout(tampilkanKataBerikut, 1000); // 1 detik per kata
+    setTimeout(tampilkanKataBerikut, 1200); // 1.2 detik per kata biar kebaca
   } else {
-    // Udah selesai, munculin pertanyaan
     setTimeout(munculPertanyaan, 500);
   }
 }
@@ -96,28 +98,38 @@ function munculPertanyaan(){
   document.getElementById("feedback").textContent = "";
   document.getElementById("btn-next").classList.add("hidden");
   
-  // Bikin pertanyaan random: "Kata ke-X apa?" atau "Ada kata apa aja?"
-  const tipeSoal = Math.random() > 0.5? "posisi" : "ada";
+  // Pilih 1 dari 5 kata buat jadi jawaban
+  jawabanBenar = kataSoalIni[Math.floor(Math.random() * 5)];
+  const [angkaBenar, kataBenar] = jawabanBenar.split(" ");
   
-  if(tipeSoal === "posisi"){
-    const posisi = Math.floor(Math.random() * 5) + 1;
-    jawabanBenar = kataSoalIni[posisi - 1];
-    document.getElementById("soal").textContent = `Kata ke-${posisi} apa?`;
+  // Tipe soal random: tanya angka atau tanya kata
+  const tanyaAngka = Math.random() > 0.5;
+  
+  if(tanyaAngka){
+    document.getElementById("soal").textContent = `Angka untuk "${kataBenar}" berapa?`;
+    jawabanBenar = angkaBenar;
   } else {
-    jawabanBenar = kataSoalIni[Math.floor(Math.random() * 5)];
-    document.getElementById("soal").textContent = `Mana yang tadi muncul?`;
+    document.getElementById("soal").textContent = `Kata untuk angka "${angkaBenar}" apa?`;
+    jawabanBenar = kataBenar;
   }
   
-  // Bikin pilihan jawaban
+  // Bikin pilihan PG
   let pilihan = [jawabanBenar];
-  while(pilihan.length < 5){
-    const kataRandom = semuaKata[Math.floor(Math.random() * semuaKata.length)];
-    if(!pilihan.includes(kataRandom) &&!kataSoalIni.includes(kataRandom)){
-      pilihan.push(kataRandom);
+  if(tanyaAngka){
+    // Pilihan angka
+    while(pilihan.length < 5){
+      const angkaRandom = String(Math.floor(Math.random() * 90) + 10);
+      if(!pilihan.includes(angkaRandom)) pilihan.push(angkaRandom);
+    }
+  } else {
+    // Pilihan kata
+    while(pilihan.length < 5){
+      const kataRandom = kataDasar[Math.floor(Math.random() * kataDasar.length)];
+      if(!pilihan.includes(kataRandom)) pilihan.push(kataRandom);
     }
   }
-  pilihan = shuffleArray(pilihan);
   
+  pilihan = shuffleArray(pilihan);
   const huruf = ["a","b","c","d","e"];
   document.getElementById("pilihan").innerHTML = pilihan.map((e,o)=>
     `<button onclick="cekJawaban('${e}',this)">${huruf[o]}. ${e}</button>`
